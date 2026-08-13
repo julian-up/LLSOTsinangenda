@@ -1,168 +1,247 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Generador de Plantillas con Filtro</title>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Generador de Plantillas con Filtro - Corregido</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
-        body { font-family: Arial, sans-serif; padding: 20px; background-color: #f4f7f6; color: #333; }
-        h2 { color: #2c3e50; }
-        .controls { 
-            margin-bottom: 20px; 
-            padding: 15px; 
-            background: white; 
-            border-radius: 8px; 
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1); 
-            display: flex; 
-            gap: 20px; 
-            align-items: center; 
-            flex-wrap: wrap; 
-        }
-        button { background-color: #3498db; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-size: 16px; }
-        button:hover { background-color: #2980b9; }
-        select { padding: 9px; border-radius: 5px; border: 1px solid #ccc; font-size: 15px; outline: none; cursor: pointer;}
-        .template-container { 
-            border-left: 5px solid #3498db; 
-            padding: 15px; 
-            margin-top: 15px; 
-            white-space: pre-wrap; 
-            background-color: white; 
-            border-radius: 4px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            font-family: monospace;
-            font-size: 14px;
-        }
-        .separator { margin: 20px 0; border-bottom: 1px dashed #ccc; }
-        .info { font-size: 14px; color: #7f8c8d; font-weight: bold; margin-bottom: 10px;}
+      body {
+        font-family: Arial, sans-serif;
+        padding: 20px;
+        background-color: #f4f7f6;
+        color: #333;
+      }
+      h2 {
+        color: #2c3e50;
+      }
+      .controls {
+        margin-bottom: 20px;
+        padding: 15px;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        display: flex;
+        gap: 20px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+      button {
+        background-color: #3498db;
+        color: white;
+        border: none;
+        padding: 10px 15px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+      }
+      button:hover {
+        background-color: #2980b9;
+      }
+      select {
+        padding: 9px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+        font-size: 15px;
+        outline: none;
+        cursor: pointer;
+      }
+      .template-container {
+        border-left: 5px solid #3498db;
+        padding: 15px;
+        margin-top: 15px;
+        white-space: pre-wrap;
+        background-color: white;
+        border-radius: 4px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        font-family: monospace;
+        font-size: 14px;
+      }
+      .separator {
+        margin: 20px 0;
+        border-bottom: 1px dashed #ccc;
+      }
+      .info {
+        font-size: 14px;
+        color: #7f8c8d;
+        font-weight: bold;
+        margin-bottom: 10px;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <h2>Generador de Plantillas de Visitas</h2>
-    
+
     <div class="controls">
-        <div>
-            <input type="file" id="excelFile" accept=".xlsx, .xls">
-            <button onclick="procesarExcel()">Cargar Archivo</button>
-        </div>
-        <div>
-            <label for="filtroRegional"><strong>Filtrar por Regional: </strong></label>
-            <select id="filtroRegional" onchange="renderizarPlantillas()">
-                <option value="TODAS">Todas las regionales</option>
-                <option value="COSTA">Costa</option>
-                <option value="ANTIOQUIA">Antioquia</option>
-                <option value="EJE CAFETERO">Eje Cafetero</option>
-                <option value="OCCIDENTE">Occidente</option>
-                <option value="CENTRO">Centro</option>
-                <option value="ORIENTE">Oriente</option>
-            </select>
-        </div>
+      <div>
+        <input type="file" id="excelFile" accept=".xlsx, .xls" />
+        <button onclick="procesarExcel()">Cargar Archivo</button>
+      </div>
+      <div>
+        <label for="filtroRegional"
+          ><strong>Filtrar por Regional: </strong></label
+        >
+        <select id="filtroRegional" onchange="renderizarPlantillas()">
+          <option value="TODAS">Todas las regionales</option>
+          <option value="COSTA">Costa</option>
+          <option value="ANTIOQUIA">Antioquia</option>
+          <option value="EJE CAFETERO">Eje Cafetero</option>
+          <option value="OCCIDENTE">Occidente</option>
+          <option value="CENTRO">Centro</option>
+          <option value="ORIENTE">Oriente</option>
+        </select>
+      </div>
     </div>
-    
+
     <div id="info-resultados" class="info"></div>
     <div id="resultado"></div>
 
     <script>
-        const contactos = {
-            'Costa': '@3145950587 @3145950561',
-            'Antioquia': '@3015733031 @3202755576 @3144702949 @3102351291',
-            'Eje Cafetero': '@3015733031 @3202755576 @3144702949 @3102351291',
-            'Occidente': '@3203135575 @3143304156 @3144115153 @3204101058',
-            'Centro': '@3214396535 @3142726876 @3204882029',
-            'Oriente': '@3202755668'
+      const contactos = {
+        Costa: "@3145950587 @3145950561",
+        Antioquia: "@3015733031 @3202755576 @3144702949 @3102351291",
+        "Eje Cafetero": "@3015733031 @3202755576 @3144702949 @3102351291",
+        Occidente: "@3203135575 @3143304156 @3144115153 @3204101058",
+        Centro: "@3214396535 @3142726876 @3204882029",
+        Oriente: "@3202755668",
+      };
+
+      let datosGlobales = [];
+
+      function getContacto(regional) {
+        if (!regional) return "";
+        let regUpper = regional.toString().toUpperCase();
+        if (regUpper.includes("COSTA")) return contactos["Costa"];
+        if (regUpper.includes("ANTIOQUIA") || regUpper.includes("EJE CAFETERO"))
+          return contactos["Antioquia"];
+        if (regUpper.includes("OCCIDENTE")) return contactos["Occidente"];
+        if (regUpper.includes("CENTRO")) return contactos["Centro"];
+        if (regUpper.includes("ORIENTE")) return contactos["Oriente"];
+        return "";
+      }
+
+      // Función para buscar valores ignorando mayúsculas, tildes y espacios extra
+      function buscarValor(row, posiblesNombres) {
+        const rowNormalizado = {};
+        for (let key in row) {
+          // Normaliza la llave: minúsculas, sin tildes, sin espacios al inicio/fin
+          let normKey = key
+            .toLowerCase()
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .trim();
+          rowNormalizado[normKey] = row[key];
+        }
+
+        for (let nombre of posiblesNombres) {
+          let normNombre = nombre
+            .toLowerCase()
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .trim();
+          if (
+            rowNormalizado[normNombre] !== undefined &&
+            rowNormalizado[normNombre] !== null &&
+            rowNormalizado[normNombre] !== ""
+          ) {
+            return rowNormalizado[normNombre];
+          }
+        }
+        return "";
+      }
+
+      function procesarExcel() {
+        const fileInput = document.getElementById("excelFile");
+        const file = fileInput.files[0];
+        if (!file) {
+          alert("Por favor selecciona un archivo Excel.");
+          return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          const data = new Uint8Array(e.target.result);
+          const workbook = XLSX.read(data, { type: "array" });
+          const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+
+          datosGlobales = XLSX.utils.sheet_to_json(firstSheet, { defval: "" });
+          renderizarPlantillas();
         };
+        reader.readAsArrayBuffer(file);
+      }
 
-        let datosGlobales = []; // Almacena los datos leídos del Excel
+      function renderizarPlantillas() {
+        if (datosGlobales.length === 0) return;
 
-        function getContacto(regional) {
-            if (!regional) return '';
-            let regUpper = regional.toString().toUpperCase();
-            if (regUpper.includes('COSTA')) return contactos['Costa'];
-            if (regUpper.includes('ANTIOQUIA') || regUpper.includes('EJE CAFETERO')) return contactos['Antioquia'];
-            if (regUpper.includes('OCCIDENTE')) return contactos['Occidente'];
-            if (regUpper.includes('CENTRO')) return contactos['Centro'];
-            if (regUpper.includes('ORIENTE')) return contactos['Oriente'];
-            return '';
+        const filtro = document.getElementById("filtroRegional").value;
+        let datosFiltrados = datosGlobales;
+
+        if (filtro !== "TODAS") {
+          datosFiltrados = datosGlobales.filter((row) => {
+            let regional = buscarValor(row, ["regional"])
+              .toString()
+              .toUpperCase();
+            return regional.includes(filtro);
+          });
         }
 
-        function procesarExcel() {
-            const fileInput = document.getElementById('excelFile');
-            const file = fileInput.files[0];
-            if (!file) {
-                alert("Por favor selecciona un archivo Excel.");
-                return;
-            }
+        let htmlOutput = "";
 
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const data = new Uint8Array(e.target.result);
-                const workbook = XLSX.read(data, {type: 'array'});
-                const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-                
-                // Guardar los datos del Excel para poder filtrarlos después sin volver a cargar
-                datosGlobales = XLSX.utils.sheet_to_json(firstSheet, {defval: ""});
-                
-                // Mostrar resultados con el filtro actual
-                renderizarPlantillas();
-            };
-            reader.readAsArrayBuffer(file);
+        datosFiltrados.forEach((row, index) => {
+          let regional = buscarValor(row, ["regional"]);
+          let contacto = getContacto(regional);
+
+          // Mapeo inteligente de columnas
+          let solicitud = buscarValor(row, [
+            "tipo solicitud",
+            "motivo solicitud",
+            "solicitud",
+          ]);
+          let ot = buscarValor(row, ["lls", "ot", "ot o lls"]);
+          let cuentas = buscarValor(row, ["cuenta", "cuentas"]);
+          let cliente = buscarValor(row, [
+            "nombre cliente",
+            "nombre empresa",
+            "cliente",
+          ]);
+          let ciudad = buscarValor(row, ["ciudad"]);
+          let correo = buscarValor(row, ["correo", "correo electronico"]);
+          let horario = buscarValor(row, [
+            "horario atencion",
+            "horario de atencion",
+            "horario",
+          ]);
+          let observaciones = buscarValor(row, [
+            "observacion",
+            "observaciones",
+            "observacion agenda",
+          ]);
+
+          let template = `${contacto}\n`;
+          template += `Solicitud: ${solicitud}\n`;
+          template += `Regional: ${regional}\n`;
+          template += `Ot o lls: ${ot}\n`;
+          template += `Cuentas: ${cuentas}\n`;
+          template += `Cliente: ${cliente}\n`;
+          template += `Ciudad: ${ciudad}\n`;
+          template += `Correo: ${correo}\n`;
+          template += `Horario de atención: ${horario}\n`;
+          template += `Observaciones: ${observaciones}`;
+
+          htmlOutput += `<div class="template-container">${template}</div>`;
+          if (index < datosFiltrados.length - 1) {
+            htmlOutput += `<div class="separator"></div>`;
+          }
+        });
+
+        document.getElementById("resultado").innerHTML = htmlOutput;
+
+        const contador = document.getElementById("info-resultados");
+        if (datosFiltrados.length > 0) {
+          contador.innerText = `Mostrando ${datosFiltrados.length} plantilla(s) de ${datosGlobales.length} en total.`;
+        } else {
+          contador.innerText = `No se encontraron plantillas para la regional seleccionada.`;
         }
-
-        function renderizarPlantillas() {
-            if (datosGlobales.length === 0) return;
-
-            const filtro = document.getElementById('filtroRegional').value;
-            let datosFiltrados = datosGlobales;
-
-            // Aplicar el filtro si no es "TODAS"
-            if (filtro !== 'TODAS') {
-                datosFiltrados = datosGlobales.filter(row => {
-                    let regional = (row['Regional'] || row['REGIONAL'] || row['regional'] || '').toString().toUpperCase();
-                    return regional.includes(filtro);
-                });
-            }
-
-            let htmlOutput = '';
-            
-            datosFiltrados.forEach((row, index) => {
-                let regional = row['Regional'] || row['REGIONAL'] || row['regional'] || '';
-                let contacto = getContacto(regional);
-                
-                let solicitud = row['Solicitud'] || row['SOLICITUD'] || '';
-                let ot = row['Ot o lls'] || row['OT O LLS'] || row['OT'] || row['LLS'] || row['Ot'] || '';
-                let cuentas = row['Cuentas'] || row['CUENTAS'] || row['Cuenta'] || '';
-                let cliente = row['Cliente'] || row['CLIENTE'] || '';
-                let ciudad = row['Ciudad'] || row['CIUDAD'] || '';
-                let correo = row['Correo'] || row['CORREO'] || row['Correo electrónico'] || '';
-                let horario = row['Horario de atención'] || row['HORARIO DE ATENCIÓN'] || row['Horario'] || row['HORARIO'] || '';
-                let observaciones = row['Observaciones'] || row['OBSERVACIONES'] || '';
-                
-                let template = `${contacto}\n`;
-                template += `Solicitud: ${solicitud}\n`;
-                template += `Regional: ${regional}\n`;
-                template += `Ot o lls: ${ot}\n`;
-                template += `Cuentas: ${cuentas}\n`;
-                template += `Cliente: ${cliente}\n`;
-                template += `Ciudad: ${ciudad}\n`;
-                template += `Correo: ${correo}\n`;
-                template += `Horario de atención: ${horario}\n`;
-                template += `Observaciones: ${observaciones}`;
-                
-                htmlOutput += `<div class="template-container">${template}</div>`;
-                if(index < datosFiltrados.length - 1) {
-                    htmlOutput += `<div class="separator"></div>`;
-                }
-            });
-            
-            document.getElementById('resultado').innerHTML = htmlOutput;
-            
-            // Actualizar el contador de resultados
-            const contador = document.getElementById('info-resultados');
-            if(datosFiltrados.length > 0) {
-                contador.innerText = `Mostrando ${datosFiltrados.length} plantilla(s) de ${datosGlobales.length} en total.`;
-            } else {
-                contador.innerText = `No se encontraron plantillas para la regional seleccionada.`;
-            }
-        }
+      }
     </script>
-</body>
+  </body>
 </html>
